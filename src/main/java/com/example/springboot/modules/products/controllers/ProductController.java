@@ -16,11 +16,19 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("/products")
 public class ProductController {
     @Autowired
     ProductRepository productRepository;
 
-    @PostMapping("/products")
+    @GetMapping
+    public ResponseEntity<List<ProductModel>> getAllProducts() {
+        final FindAllProductService productList = new FindAllProductService(productRepository);
+
+        return ResponseEntity.status(HttpStatus.OK).body(productList.execute());
+    }
+
+    @PostMapping
     public ResponseEntity<ProductModel> saveProduct(@RequestBody @Valid ProductRecordDTO productRecordDTO) {
         final AddProductService addProductService = new AddProductService(productRepository);
         final var productAdded = addProductService.execute(productRecordDTO);
@@ -28,20 +36,13 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(productAdded);
     }
 
-    @GetMapping("/products")
-    public ResponseEntity<List<ProductModel>> getAllProducts() {
-        final FindAllProductService productList = new FindAllProductService(productRepository);
-
-        return ResponseEntity.status(HttpStatus.OK).body(productList.execute());
-    }
-
-    @GetMapping("/products/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Object> getOneProduct(@PathVariable(value="id") UUID id) {
         final FindProductByIDService product = new FindProductByIDService(productRepository);
         return ResponseEntity.status(HttpStatus.OK).body(product.execute(id));
     }
 
-    @PutMapping("/products/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<Object> updateProduct(@PathVariable(value="id") UUID id,
                                                 @RequestBody @Valid ProductRecordDTO productRecordDTO) {
         final UpdateProductService updateProductService = new UpdateProductService(productRepository);
@@ -50,7 +51,7 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productUpdated);
     }
 
-    @DeleteMapping("/products/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteProduct(@PathVariable(value="id") UUID id) {
         final DeleteProductService deleteProductService = new DeleteProductService(productRepository);
         deleteProductService.execute(id);
